@@ -221,7 +221,7 @@ jobs:
           echo "::endgroup::"
           
       - name: 📊 Upload Coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: matrix.python-version == '3.11'
         with:
           files: ./coverage.xml
