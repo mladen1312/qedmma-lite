@@ -1,0 +1,76 @@
+# =============================================================================
+# Pre-commit Hooks - QEDMMA-Lite
+# =============================================================================
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+# =============================================================================
+
+repos:
+  # General hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # Python formatting with Ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # Type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [numpy]
+        args: [--ignore-missing-imports, --no-error-summary]
+        exclude: ^(tests/|docs/)
+
+  # Security checks
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.7
+    hooks:
+      - id: bandit
+        args: ['-ll', '-q']
+        exclude: ^tests/
+
+  # Verilog/SystemVerilog linting (if verilator available)
+  - repo: local
+    hooks:
+      - id: verilator-lint
+        name: Verilator Lint
+        entry: bash -c 'command -v verilator >/dev/null && verilator --lint-only -Wall -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC --timing "$@" || echo "Verilator not installed, skipping"'
+        language: system
+        files: '\.(sv|v)$'
+        pass_filenames: true
+
+  # Commit message format
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.14.1
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+# CI-specific settings
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [verilator-lint]  # Skip in CI (handled by dedicated job)
+  submodules: false
