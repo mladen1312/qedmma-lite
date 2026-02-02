@@ -20,7 +20,7 @@ Export Formats:
 - MATLAB (.mat for legacy systems)
 
 MIT License - Copyright (c) 2026 Dr. Mladen Mešter
-Website: www.mester-labs.com
+Website: www.nexellum.com
 """
 
 import numpy as np
