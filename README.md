@@ -236,8 +236,8 @@ measurements = network.generate_measurements(trajectory)
 | **Anomaly Hunter™** | Physics-agnostic tracking layer | UAP/unconventional targets |
 | **MultiStatic Fusion Engine** | Async network synchronization | Distributed radar networks |
 
-📧 **Contact**: [info@mester-labs.com](mailto:info@mester-labs.com)  
-🌐 **Website**: [www.mester-labs.com](https://www.mester-labs.com)
+📧 **Contact**: [mladen@nexellum.com](mailto:mladen@nexellum.com)  
+🌐 **Website**: [www.nexellum.com](https://www.nexellum.com)
 
 ## 📚 Publications
 
