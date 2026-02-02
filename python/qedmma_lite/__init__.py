@@ -89,3 +89,29 @@ def get_commercial_info():
 ║  Contact: sales@nexellum.com | www.nexellum.com                     ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 """
+
+# Zero-DSP FPGA Correlation Module
+try:
+    from .zero_dsp import (
+        ZeroDspCorrelator,
+        ZeroDspCorrelatorSW,
+        CSDEncoder,
+        TernaryEncoder,
+        RadarCodes,
+        benchmark_csd_vs_multiply
+    )
+except ImportError as e:
+    # Optional dependency - won't fail if numpy not available
+    pass
+
+__all__ = [
+    # Tracking modules
+    'tracker',
+    'tracker_v2', 
+    'advanced_filters',
+    # FPGA modules
+    'zero_dsp',
+    'ZeroDspCorrelator',
+    'CSDEncoder',
+    'RadarCodes',
+]
