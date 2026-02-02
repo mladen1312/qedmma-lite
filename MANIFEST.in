@@ -1,0 +1,56 @@
+# MANIFEST.in for QEDMMA-Lite
+# Specifies additional files to include in source distributions
+
+# Include documentation
+include README.md
+include CHANGELOG.md
+include LICENSE
+include CONTRIBUTING.md
+
+# Include package configuration
+include pyproject.toml
+include setup.py
+include pytest.ini
+include .pre-commit-config.yaml
+
+# Include type hints marker
+include python/qedmma_lite/py.typed
+
+# Include FPGA sources
+recursive-include fpga *.sv *.v *.xdc *.tcl
+recursive-include fpga *.py Makefile
+recursive-include fpga *.md
+
+# Include test files (for verification)
+recursive-include python/tests *.py
+
+# Include benchmark
+recursive-include benchmark *.py
+
+# Include datasets
+recursive-include datasets *.py *.json
+
+# Exclude compiled files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude __pycache__
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude *.egg-info
+
+# Exclude build artifacts
+prune build
+prune dist
+prune .eggs
+prune *.egg-info
+prune .git
+prune .github
+prune .pytest_cache
+prune .mypy_cache
+prune .ruff_cache
+prune htmlcov
+prune sim_build
+
+# Exclude IDE files
+prune .vscode
+prune .idea
