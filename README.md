@@ -164,7 +164,7 @@ qedmma-lite/
 │   ├── test_tracker.py
 │   └── test_tdoa.py
 │
-├── LICENSE                     # MIT License
+├── LICENSE                     # AGPL-3.0 License
 ├── README.md
 ├── requirements.txt
 └── setup.py
@@ -268,10 +268,10 @@ clang-format -i cpp/src/*.cpp cpp/include/**/*.hpp
 
 ## 📄 License
 
-This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
+This project is licensed under the AGPL-3.0 License - see [LICENSE](LICENSE) file.
 
 ```
-MIT License
+AGPL-3.0 License
 
 Copyright (c) 2026 Dr. Mladen Mešter
 
