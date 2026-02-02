@@ -43,6 +43,25 @@ __email__ = "mladen@nexellum.com"
 __license__ = "MIT"
 __url__ = "https://github.com/mladen1312/qedmma-lite"
 
+
+# Adaptive Noise Estimation Module
+try:
+    from .adaptive_noise import (
+        AdaptiveNoiseEstimator,
+        AdaptiveNoiseConfig,
+        AdaptiveKalmanFilter,
+        MehraEstimator,
+        SageHusaEstimator,
+        VariationalBayesianEstimator,
+        CovarianceMatchingEstimator,
+        IMMAdaptiveEstimator,
+        AdaptationMethod,
+        compute_nees,
+        compute_nis,
+    )
+except ImportError:
+    pass
+
 __all__ = [
     # Main classes
     "QEDMMATracker",
@@ -111,6 +130,9 @@ __all__ = [
     'advanced_filters',
     # FPGA modules
     'zero_dsp',
+    'adaptive_noise',
+    'AdaptiveNoiseEstimator',
+    'AdaptiveKalmanFilter',
     'ZeroDspCorrelator',
     'CSDEncoder',
     'RadarCodes',
