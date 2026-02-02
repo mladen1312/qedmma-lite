@@ -1,0 +1,25 @@
+# CI/CD artifacts
+*.log
+*.xml
+htmlcov/
+.coverage
+.pytest_cache/
+__pycache__/
+
+# Simulation artifacts  
+*.vcd
+*.fst
+*.gtkw
+sim_build/
+
+# Synthesis artifacts
+*.dcp
+*.bit
+*.ltx
+vivado*.jou
+vivado*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
