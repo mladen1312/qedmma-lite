@@ -1,33 +1,132 @@
 # =============================================================================
-# Ruff Configuration - QEDMMA-Lite
+# QEDMMA-Lite - Python Package Configuration
 # =============================================================================
-# Fast Python linter and formatter
-# Docs: https://docs.astral.sh/ruff/
+# Author:  Dr. Mladen Mešter / Nexellum d.o.o.
+# License: MIT
+# =============================================================================
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qedmma-lite"
+version = "1.0.0"
+description = "Open source radar target tracking with IMM/UKF/CKF filters and Zero-DSP FPGA correlation"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Dr. Mladen Mešter", email = "mladen@nexellum.com"}
+]
+maintainers = [
+    {name = "Nexellum d.o.o.", email = "mladen@nexellum.com"}
+]
+keywords = [
+    "radar",
+    "tracking",
+    "kalman-filter",
+    "imm",
+    "ukf",
+    "ckf",
+    "sensor-fusion",
+    "fpga",
+    "signal-processing",
+    "aerospace",
+    "defense",
+    "adaptive-filter",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-xdist>=3.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "pre-commit>=3.0.0",
+]
+docs = [
+    "sphinx>=6.0.0",
+    "sphinx-rtd-theme>=1.2.0",
+    "myst-parser>=1.0.0",
+]
+fpga = [
+    "cocotb>=1.8.0",
+]
+viz = [
+    "matplotlib>=3.5.0",
+]
+all = [
+    "qedmma-lite[dev,docs,fpga,viz]",
+]
+
+[project.urls]
+Homepage = "https://github.com/mladen1312/qedmma-lite"
+Documentation = "https://github.com/mladen1312/qedmma-lite#readme"
+Repository = "https://github.com/mladen1312/qedmma-lite.git"
+Issues = "https://github.com/mladen1312/qedmma-lite/issues"
+Changelog = "https://github.com/mladen1312/qedmma-lite/blob/main/CHANGELOG.md"
+Commercial = "https://www.nexellum.com"
+
+[project.scripts]
+qedmma-demo = "qedmma_lite.cli:demo_cli"
+
+# =============================================================================
+# Setuptools Configuration
+# =============================================================================
+
+[tool.setuptools]
+package-dir = {"" = "python"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["python"]
+include = ["qedmma_lite*"]
+exclude = ["tests*", "benchmark*"]
+
+[tool.setuptools.package-data]
+qedmma_lite = ["py.typed", "*.pyi"]
+
+# =============================================================================
+# Ruff Configuration (Linting & Formatting)
 # =============================================================================
 
 [tool.ruff]
-# Target Python version
 target-version = "py39"
-
-# Line length (same as black)
 line-length = 100
-
-# Include Python files
 include = ["*.py", "*.pyi"]
-
-# Exclude directories
 exclude = [
     ".git",
     ".venv",
     "__pycache__",
     "build",
     "dist",
-    "*.egg-info",
-    ".eggs",
 ]
 
 [tool.ruff.lint]
-# Enable rules
 select = [
     "E",      # pycodestyle errors
     "W",      # pycodestyle warnings
@@ -36,72 +135,26 @@ select = [
     "B",      # flake8-bugbear
     "C4",     # flake8-comprehensions
     "UP",     # pyupgrade
-    "SIM",    # flake8-simplify
-    "TCH",    # flake8-type-checking
-    "PTH",    # flake8-use-pathlib
-    "RUF",    # Ruff-specific rules
 ]
-
-# Ignore specific rules
 ignore = [
     "E501",   # Line too long (handled by formatter)
-    "B008",   # Do not perform function calls in argument defaults
-    "B905",   # `zip()` without an explicit `strict=` parameter
-    "SIM108", # Use ternary operator instead of if-else
-    "UP007",  # Use X | Y for type unions (needs Python 3.10+)
 ]
 
-# Allow autofix for all enabled rules
-fixable = ["ALL"]
-unfixable = []
-
-[tool.ruff.lint.per-file-ignores]
-# Tests can use assert and have longer lines
-"**/test_*.py" = ["S101", "E501"]
-"**/tests/*.py" = ["S101", "E501"]
-
-# Init files can have unused imports
-"__init__.py" = ["F401", "F403"]
-
 [tool.ruff.lint.isort]
-# isort configuration
 known-first-party = ["qedmma_lite"]
-section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 
 [tool.ruff.format]
-# Formatter settings (like black)
 quote-style = "double"
 indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
 
 # =============================================================================
-# Black Configuration (backup if ruff format not used)
+# Black Configuration
 # =============================================================================
 
 [tool.black]
 line-length = 100
 target-version = ['py39', 'py310', 'py311', 'py312']
 include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.venv
-  | build
-  | dist
-)/
-'''
-
-# =============================================================================
-# isort Configuration
-# =============================================================================
-
-[tool.isort]
-profile = "black"
-line_length = 100
-known_first_party = ["qedmma_lite"]
-skip = [".venv", "build", "dist"]
 
 # =============================================================================
 # MyPy Configuration
@@ -112,18 +165,9 @@ python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-exclude = [
-    "build",
-    "dist",
-    ".venv",
-]
 
 [[tool.mypy.overrides]]
-module = "numpy.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "scipy.*"
+module = ["numpy.*", "scipy.*"]
 ignore_missing_imports = true
 
 # =============================================================================
@@ -132,29 +176,15 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = [
-    "-ra",
-    "-q",
-    "--strict-markers",
-    "--tb=short",
-]
-testpaths = [
-    "python/tests",
-    "python/qedmma_lite",
-]
-python_files = ["test_*.py", "*_test.py"]
+addopts = ["-ra", "-q", "--strict-markers"]
+testpaths = ["python/tests"]
+python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-
 markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "rtl: marks tests that require RTL simulation",
-    "hardware: marks tests that require hardware",
-]
-
-filterwarnings = [
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
+    "slow: marks tests as slow",
+    "rtl: marks tests requiring RTL simulation",
+    "hardware: marks tests requiring hardware",
 ]
 
 # =============================================================================
@@ -164,12 +194,7 @@ filterwarnings = [
 [tool.coverage.run]
 source = ["qedmma_lite"]
 branch = true
-parallel = true
-omit = [
-    "*/__pycache__/*",
-    "*/tests/*",
-    "*/.venv/*",
-]
+omit = ["*/tests/*", "*/__pycache__/*"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -182,6 +207,3 @@ exclude_lines = [
 ]
 fail_under = 50
 show_missing = true
-
-[tool.coverage.html]
-directory = "htmlcov"
