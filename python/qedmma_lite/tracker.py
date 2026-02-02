@@ -10,7 +10,7 @@ This is the community edition of QEDMMA. For advanced features including:
 - Anomaly Hunter™ (Physics-Agnostic Tracking)
 - Asynchronous Multi-Static Fusion Engine
 
-Contact: info@mester-labs.com
+Contact: mladen@nexellum.com
 """
 
 import numpy as np
@@ -655,7 +655,7 @@ class QEDMMATracker:
     - TDOA fusion support
     
     For advanced features (FPGA IP, Anomaly Hunter, Async Fusion),
-    contact info@mester-labs.com
+    contact mladen@nexellum.com
     """
     
     def __init__(self, dt: float = 0.0625, num_models: int = 4):
@@ -876,8 +876,8 @@ For advanced features:
 - Anomaly Hunter™ (Physics-Agnostic)
 - Async Multi-Static Fusion
 
-Contact: info@mester-labs.com
-Website: www.mester-labs.com
+Contact: mladen@nexellum.com
+Website: www.nexellum.com
 """
 
 
