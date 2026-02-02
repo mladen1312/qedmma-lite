@@ -2,7 +2,7 @@
 # QEDMMA-Lite - Python Package Configuration
 # =============================================================================
 # Author:  Dr. Mladen Mešter / Nexellum d.o.o.
-# License: MIT
+# License: AGPL-3.0-or-later
 # =============================================================================
 
 [build-system]
@@ -14,7 +14,7 @@ name = "qedmma-lite"
 version = "1.0.0"
 description = "Open source radar target tracking with IMM/UKF/CKF filters and Zero-DSP FPGA correlation"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "AGPL-3.0-or-later"}
 requires-python = ">=3.9"
 authors = [
     {name = "Dr. Mladen Mešter", email = "mladen@nexellum.com"}
