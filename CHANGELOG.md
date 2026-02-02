@@ -2,95 +2,61 @@
 
 All notable changes to QEDMMA-Lite will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [3.0.0] - 2026-02-02
 
-## [Unreleased]
+### 🔐 License Change
+- **MIT → AGPL-3.0-or-later**: Enterprise users must open-source derivatives or purchase commercial license
+- Commercial licensing available via Nexellum (mladen@nexellum.com)
 
-### Added
-- Documentation improvements
-- Additional test coverage
+### 🚀 Added - Advanced Filters
 
-## [1.0.0] - 2026-02-02
+#### Unscented Kalman Filter (UKF)
+- Sigma-point based nonlinear state estimation
+- Van der Merwe scaled unscented transform
+- Configurable α, β, κ parameters
+- Radar tracking preset (`create_radar_ukf()`)
 
-### Added
-
-#### Core Tracking Algorithms
-- **QEDMMA Tracker v1.0**: 4-model IMM Filter (CV, CA, CT, Jerk) for maneuvering targets
-- **QEDMMA Tracker v2.0**: Enhanced with UKF/CKF sigma-point filters
-- **Advanced Filters**: Unscented Kalman Filter (UKF), Cubature Kalman Filter (CKF)
+#### Cubature Kalman Filter (CKF)
+- Spherical-radial cubature rule
+- No tuning parameters required
+- Superior high-dimensional performance (n > 3)
+- Square-root variant (SR-CKF) for numerical stability
 
 #### Adaptive Noise Estimation
-- **Mehra Estimator**: Innovation-based noise estimation
-- **Sage-Husa Filter**: Exponential forgetting adaptive filter
-- **Variational Bayesian**: Probabilistic noise estimation
-- **Covariance Matching**: Windowed sample statistics
-- **IMM-Adaptive**: Per-model noise adaptation
+- Innovation-based R estimation
+- Covariance matching for Q and R
+- Sage-Husa recursive estimator with forgetting factor
+- Composite estimator with voting
 
-#### Zero-DSP FPGA Module
-- **Zero-DSP Correlator**: DSP-free pulse compression (SystemVerilog RTL)
-- **CSD Encoder**: Canonical Signed Digit coefficient encoding
-- **Ternary Encoder**: Hardware coefficient format conversion
-- **Radar Codes**: Barker, MLS sequence generators
-- **Cocotb Testbench**: Complete verification suite
-- **Vivado Scripts**: Synthesis automation for AMD/Xilinx FPGAs
+#### Zero-DSP Correlation
+- 1-bit XOR + popcount correlation
+- 2-bit LUT-based correlation
+- HLS C++ implementation for Vitis
+- VHDL implementation for direct synthesis
+- 0 DSP blocks, pure LUT logic
+- >1 GHz achievable on UltraScale+
 
-#### CI/CD Pipeline
-- GitHub Actions workflow with matrix testing (Python 3.9-3.12)
-- Verilator RTL linting
-- Cocotb simulation integration
-- Pre-commit hooks (Ruff, Black, MyPy)
-- Dependabot for dependency updates
-- Issue and PR templates
+### 📁 New Files
+- `python/qedmma/advanced/ukf.py`
+- `python/qedmma/advanced/ckf.py`
+- `python/qedmma/advanced/adaptive_noise.py`
+- `python/qedmma/advanced/zero_dsp_correlation.py`
+- `fpga/hls/zero_dsp_correlator.cpp`
+- `fpga/rtl/zero_dsp_correlator.vhd`
+- `tests/test_advanced_filters.py`
 
-### Documentation
-- Comprehensive README with badges
-- API documentation
-- Usage examples
-- FPGA integration guide
+### ✅ Tests
+- 12 unit tests covering all new modules
+- Integration test for complete tracking pipeline
 
-## [0.1.0] - 2026-01-15
-
-### Added
-- Initial release
-- Basic IMM-EKF tracker
-- Dataset generator for benchmarking
+## [2.0.0] - 2026-01-15
+- Initial public release with EKF, IMM, JPDA
+- Multi-target tracking framework
+- Basic FPGA support
 
 ---
 
-## Version History
-
-| Version | Date | Highlights |
-|---------|------|------------|
-| 1.0.0 | 2026-02-02 | Production release with adaptive noise, Zero-DSP, CI/CD |
-| 0.1.0 | 2026-01-15 | Initial open-source release |
-
-## Migration Guide
-
-### From 0.1.x to 1.0.0
-
-```python
-# Old import
-from qedmma_lite.tracker import QEDMMATracker
-
-# New import (still works)
-from qedmma_lite.tracker import QEDMMATracker
-
-# New features available
-from qedmma_lite import (
-    ZeroDspCorrelator,        # FPGA correlation
-    AdaptiveNoiseEstimator,   # Adaptive filtering
-    AdaptiveKalmanFilter,     # Integrated adaptive KF
-)
-```
-
-## Links
-
-- [Repository](https://github.com/mladen1312/qedmma-lite)
-- [PyPI Package](https://pypi.org/project/qedmma-lite/)
-- [Commercial License](https://www.nexellum.com)
-- [Issue Tracker](https://github.com/mladen1312/qedmma-lite/issues)
-
----
-
-**© 2026 Dr. Mladen Mešter / Nexellum d.o.o.**
+For commercial licensing inquiries:
+- Email: mladen@nexellum.com
+- Web: www.nexellum.com
+- Phone: +385 99 737 5100
