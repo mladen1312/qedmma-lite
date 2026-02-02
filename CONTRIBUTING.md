@@ -28,6 +28,6 @@ Thank you for your interest in contributing to QEDMMA-Lite!
 ## Questions?
 
 - Open a GitHub Discussion
-- Email: info@mester-labs.com
+- Email: info@nexellum.com
 
 Thank you for helping improve QEDMMA-Lite!
