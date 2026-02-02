@@ -284,3 +284,39 @@ If you find this project useful, please give it a star! It helps others discover
   <b>Built with ❤️ by Dr. Mladen Mešter</b><br>
   <i>Advancing radar tracking technology for a safer world</i>
 </p>
+
+
+## 🔧 FPGA Acceleration (New!)
+
+QEDMMA-Lite now includes FPGA-optimized implementations for hardware deployment.
+
+### Zero-DSP Correlation Engine
+
+The Zero-DSP Correlation Engine achieves real-time pulse compression **without consuming a single DSP48 slice**, freeing these expensive resources for channelizers, beamformers, and other operations.
+
+```python
+from qedmma_lite.zero_dsp import ZeroDspCorrelator, RadarCodes, CSDEncoder
+
+# Create correlator with Barker-13 code
+correlator = ZeroDspCorrelator(length=64, mode='software')
+correlator.set_coefficients(RadarCodes.BARKER_13)
+
+# Process samples
+output = correlator.process(samples)
+print(f"Peak: {correlator.peak_value} at index {correlator.peak_index}")
+
+# CSD encoding for arbitrary coefficients
+# 127 = 2^7 - 1 = (x << 7) - x (only 2 operations!)
+csd = CSDEncoder.encode(127)
+print(CSDEncoder.to_operations(csd))
+```
+
+**Features:**
+- ✅ Zero DSP48 usage (verified by synthesis)
+- ✅ 100+ MSPS throughput
+- ✅ Binary/Ternary/CSD coefficient support
+- ✅ Cocotb-verified RTL
+- ✅ Vivado synthesis scripts included
+
+📁 See [`fpga/zero_dsp/`](fpga/zero_dsp/) for full RTL implementation and documentation.
+
