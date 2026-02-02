@@ -1,0 +1,80 @@
+site_name: QEDMMA-Lite Documentation
+site_description: Quantum-Enhanced Data-Driven Multi-Model Algorithm for Radar Tracking
+site_author: Dr. Mladen Mešter / Nexellum
+site_url: https://mladen1312.github.io/qedmma-lite/
+
+repo_name: mladen1312/qedmma-lite
+repo_url: https://github.com/mladen1312/qedmma-lite
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.arithmatex:
+      generic: true
+  - admonition
+  - tables
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - License: getting-started/license.md
+  - Algorithms:
+    - Overview: algorithms/overview.md
+    - UKF: algorithms/ukf.md
+    - CKF: algorithms/ckf.md
+    - Adaptive Noise: algorithms/adaptive-noise.md
+    - Zero-DSP Correlation: algorithms/zero-dsp.md
+  - FPGA Implementation:
+    - Overview: fpga/overview.md
+    - Zero-DSP Correlator: fpga/zero-dsp-correlator.md
+    - Synthesis Guide: fpga/synthesis.md
+  - API Reference:
+    - qedmma.advanced: api/advanced.md
+  - Benchmarks:
+    - Filter Comparison: benchmarks/filter-comparison.md
+  - Commercial:
+    - Licensing: commercial/licensing.md
+    - QEDMMA-Pro: commercial/pro-features.md
+
+copyright: Copyright &copy; 2026 Dr. Mladen Mešter / Nexellum
