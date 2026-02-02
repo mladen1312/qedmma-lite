@@ -13,7 +13,7 @@ For production deployment with:
 - Anomaly Hunter™ (physics-agnostic tracking)
 - Async multi-static fusion
 
-Visit: https://www.mester-labs.com
+Visit: https://www.nexellum.com
 
 MIT License - Copyright (c) 2026 Dr. Mladen Mešter
 """
@@ -39,7 +39,7 @@ from .tracker import (
 
 __version__ = "1.0.0"
 __author__ = "Dr. Mladen Mešter"
-__email__ = "info@mester-labs.com"
+__email__ = "mladen@nexellum.com"
 __license__ = "MIT"
 __url__ = "https://github.com/mladen1312/qedmma-lite"
 
@@ -86,6 +86,6 @@ def get_commercial_info():
 ║     Full traceability matrix and compliance artifacts                     ║
 ║                                                                           ║
 ╠═══════════════════════════════════════════════════════════════════════════╣
-║  Contact: sales@mester-labs.com | www.mester-labs.com                     ║
+║  Contact: sales@nexellum.com | www.nexellum.com                     ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 """
