@@ -16,141 +16,134 @@ Standard Kalman filters assume constant motion. Real targets **maneuver**. When 
 
 **IMM (Interacting Multiple Model)** solves this by automatically switching between motion models. QEDMMA makes IMM accessible without the complexity.
 
-### Benchmark Results (20-run Monte Carlo)
+---
 
-| Scenario | IMM (QEDMMA/FilterPy) | Single-Model EKF | IMM Advantage |
-|:---------|:---------------------:|:----------------:|:-------------:|
-| Linear (CV) | **12m** | 11m | -9% (EKF optimal here) |
-| **Maneuvering (3g)** | **40m** | 124m | **+68%** |
-| **Evasive (random)** | **42m** | 115m | **+63%** |
+## 📊 Fer Benchmark: Why IMM Matters
 
-*Position RMSE in meters. Lower is better.*
+The fundamental problem with single-model filters is the **Q-dilemma**:
+- **Low Q (tight)**: Excellent on straight segments, but **diverges catastrophically** on maneuvers
+- **High Q (loose)**: Handles maneuvers, but **constant jitter** on straight segments
 
-**Key insight:** IMM provides 60-70% improvement on maneuvering targets compared to single-model EKF. For simple linear motion, a well-tuned EKF is marginally better.
+**IMM eliminates this trade-off** through automatic model switching.
+
+### Monte Carlo Results (50 runs, 6g coordinated turn scenario)
+
+| Tracker | Total RMSE | CV Segment | Turn Segment | vs IMM |
+|---------|------------|------------|--------------|--------|
+| EKF Low-Q (q=0.1) | 256.4m | 234.3m | 276.6m | IMM +90.8% better |
+| EKF High-Q (q=5.0) | 41.9m | 21.9m | 55.0m | IMM +43.6% better |
+| **IMM (QEDMMA)** | **23.6m** | 33.3m | **1.8m** | — |
+
+### Visualization
+
+![QEDMMA Fer Benchmark](docs/images/fer_benchmark_results.png)
+
+**Key Observations:**
+1. **Top-left**: EKF Low-Q (red dashed) completely diverges during the turn
+2. **Top-right**: IMM (green) maintains <50m error throughout, while EKF Low-Q exceeds 400m
+3. **Bottom-left**: IMM **automatically detects** maneuver onset — P(CT) increases during turn
+4. **Bottom-right**: IMM achieves 2m turn RMSE vs 55m for EKF High-Q
+
+### Run It Yourself
+
+```bash
+# Quick validation (10 runs, ~0.4s)
+python benchmarks/fer_benchmark.py --quick
+
+# Full benchmark (50 runs, ~2s)
+python benchmarks/fer_benchmark.py
+
+# Generate visualization
+python benchmarks/fer_benchmark_viz.py
+```
+
+**Traceability:** `[REQ-FER-COMPARISON-01]`
 
 ---
 
 ## 🚀 Quick Start
 
+```python
+from qedmma import IMMTracker, MotionModels
+
+# Create tracker with automatic model switching
+tracker = IMMTracker(
+    models=[MotionModels.CV, MotionModels.CA, MotionModels.CT],
+    dt=0.1  # 10 Hz update rate
+)
+
+# Track maneuvering target
+for measurement in radar_data:
+    state = tracker.update(measurement)
+    print(f"Position: {state.position}, Mode: {state.active_model}")
+```
+
+That's it. **6 lines** to production-ready IMM tracking.
+
+---
+
+## 📦 Installation
+
 ```bash
 pip install qedmma
 ```
 
-```python
-from qedmma import QEDMMALite
-
-# Create tracker - that's it!
-tracker = QEDMMALite(dt=0.1, meas_noise=50.0)
-
-# Initialize with first measurement
-tracker.initialize(pos=[x0, y0], vel=[0, 0])
-
-# Track
-for measurement in measurements:
-    state = tracker.update(measurement)
-    print(f"Position: {state.pos}, Model probs: {state.model_probs}")
-```
-
-**6 lines.** Compare to [FilterPy IMM setup](https://filterpy.readthedocs.io/en/latest/kalman/IMMEstimator.html) which requires 50+ lines.
+**Requirements:** Python 3.8+, NumPy, SciPy
 
 ---
 
-## 📊 QEDMMA vs FilterPy
+## 🆚 Why Not FilterPy or Stone Soup?
 
-| Aspect | QEDMMA | FilterPy IMM |
-|:-------|:------:|:------------:|
-| **Algorithm** | IMM (3 models) | IMM (configurable) |
-| **Performance** | Identical¹ | Identical¹ |
-| **Setup code** | **6 lines** | 50+ lines |
-| **Learning curve** | Minutes | Hours |
-| **Pre-tuned for radar** | ✅ | ❌ |
-| **FPGA IP cores** | ✅ (PRO) | ❌ |
+| Aspect | QEDMMA-Lite | FilterPy | Stone Soup |
+|--------|-------------|----------|------------|
+| IMM Setup | 6 lines | 50+ lines | 100+ lines |
+| Learning Curve | Minutes | Hours | Days |
+| Real-time Ready | ✅ Yes | ⚠️ Manual tuning | ❌ Heavy framework |
+| FPGA IP Cores | ✅ PRO version | ❌ None | ❌ None |
+| Maintenance | Active (2026) | Sporadic | Active |
 
-¹*With identical parameters, QEDMMA and FilterPy IMM produce the same results (<1% difference)*
-
-### Why not just use FilterPy?
-
-FilterPy is excellent, but requires you to:
-- Create separate KalmanFilter objects for each model
-- Configure transition matrices, process noise, measurement noise manually
-- Set up the IMMEstimator with mode transition probabilities
-- Handle the column-vector format
-
-QEDMMA does all this for you with radar-optimized defaults.
+**QEDMMA is to Stone Soup what Flask is to Django** — powerful but simple.
 
 ---
 
-## 🔧 Features
+## 📄 Licensing
 
-### Three Motion Models (CV/CA/CT)
-- **CV (Constant Velocity)**: For straight-line motion
-- **CA (Constant Acceleration)**: For speeding up/slowing down
-- **CT (Coordinated Turn)**: For maneuvering targets
+### QEDMMA-Lite (This Repository)
+- **License:** MIT
+- **Use cases:** R&D, prototyping, academic research, evaluation
+- **Cost:** Free forever
 
-### Automatic Model Switching
-The IMM algorithm automatically adjusts model probabilities based on measurement likelihood. No manual intervention needed.
-
-### Radar-Optimized Defaults
-Pre-tuned process noise (Q) values for typical radar tracking scenarios:
-- `q_cv = 0.1` (low noise for straight flight)
-- `q_ca = 5.0` (medium for acceleration)
-- `q_ct = 30.0` (high for maneuvers)
+### QEDMMA-PRO (Commercial)
+- **Features:** FPGA IP cores, Anomaly Hunter™, hypersonic tracking, priority support
+- **Performance:** <15m maneuvering RMSE, <50m hypersonic RMSE
+- **Pricing:** Contact for quote
+- **Contact:** mladen@nexellum.com
 
 ---
 
-## 📦 LITE vs PRO
+## 📚 Citation
 
-| Feature | Lite (MIT) | PRO (Commercial) |
-|:--------|:----------:|:----------------:|
-| IMM Filter (CV/CA/CT) | ✅ | ✅ |
-| Python implementation | ✅ | ✅ |
-| **FPGA IP Cores** | ❌ | ✅ 22 cores |
-| Multi-target (1000+) | ❌ | ✅ |
-| Anomaly Hunter™ | ❌ | ✅ |
-| DO-254 / ISO 26262 | ❌ | ✅ |
-| **Price** | Free | $25K-$350K |
-
----
-
-## 📚 Use Cases
-
-- 🚗 **Autonomous Vehicles** — Pedestrian/vehicle tracking
-- 🚁 **Drones** — Target tracking, collision avoidance
-- 🤖 **Robotics** — SLAM, object manipulation
-- 📡 **Radar/Sonar** — Maneuvering target tracking
-- 🛰️ **Aerospace** — Satellite, debris monitoring
-
----
-
-## ⚖️ License
-
-**MIT License** — Use freely in any project.
-
-For FPGA IP cores, multi-target tracking, or commercial support:  
-📧 [mladen@nexellum.com](mailto:mladen@nexellum.com)
-
----
-
-## 📬 Contact
-
-**Dr. Mladen Mešter**  
-Nexellum d.o.o.  
-📧 [mladen@nexellum.com](mailto:mladen@nexellum.com)  
-🌐 [nexellum.com](https://nexellum.com)
-
----
-
-## 📜 Citation
+If you use QEDMMA in academic work:
 
 ```bibtex
 @software{qedmma2026,
   author = {Mešter, Mladen},
-  title = {QEDMMA: Production-Ready IMM Tracking Library},
+  title = {QEDMMA: Multi-Model Adaptive Tracking Algorithm},
   year = {2026},
+  publisher = {Nexellum d.o.o.},
   url = {https://github.com/mladen1312/qedmma-lite}
 }
 ```
 
 ---
 
-*Built with 🔬 by [Dr. Mladen Mešter](mailto:mladen@nexellum.com) | [Nexellum d.o.o.](https://nexellum.com)*
+## 📞 Contact
+
+**Dr. Mladen Mešter**  
+Nexellum d.o.o.  
+📧 mladen@nexellum.com  
+🌐 [nexellum.com](https://nexellum.com)
+
+---
+
+*Built with ❤️ for the radar tracking community*
