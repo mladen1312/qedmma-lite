@@ -1,149 +1,72 @@
-# QEDMMA-Lite
+# QEDMMA-Lite v3.1.0
 
-[![PyPI version](https://badge.fury.io/py/qedmma.svg)](https://badge.fury.io/py/qedmma)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+**Quantum-Enhanced Dynamically-Managed Multi-Model Algorithm**
 
-**Production-ready IMM tracking with the simplest API.**
+Production-grade IMM (Interacting Multiple Model) tracker with **True IMM Smoother** achieving **+48% RMSE improvement** on maneuvering targets.
 
-> *"Same algorithm as FilterPy IMM, but setup in 6 lines instead of 50+"*
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 
----
-
-## 🎯 Why QEDMMA?
-
-Standard Kalman filters assume constant motion. Real targets **maneuver**. When this assumption breaks, tracking accuracy degrades significantly.
-
-**IMM (Interacting Multiple Model)** solves this by automatically switching between motion models. QEDMMA makes IMM accessible without the complexity.
-
----
-
-## 📊 Fer Benchmark: Why IMM Matters
-
-The fundamental problem with single-model filters is the **Q-dilemma**:
-- **Low Q (tight)**: Excellent on straight segments, but **diverges catastrophically** on maneuvers
-- **High Q (loose)**: Handles maneuvers, but **constant jitter** on straight segments
-
-**IMM eliminates this trade-off** through automatic model switching.
-
-### Monte Carlo Results (50 runs, 6g coordinated turn scenario)
-
-| Tracker | Total RMSE | CV Segment | Turn Segment | vs IMM |
-|---------|------------|------------|--------------|--------|
-| EKF Low-Q (q=0.1) | 256.4m | 234.3m | 276.6m | IMM +90.8% better |
-| EKF High-Q (q=5.0) | 41.9m | 21.9m | 55.0m | IMM +43.6% better |
-| **IMM (QEDMMA)** | **23.6m** | 33.3m | **1.8m** | — |
-
-### Visualization
-
-![QEDMMA Fer Benchmark](docs/images/fer_benchmark_results.png)
-
-**Key Observations:**
-1. **Top-left**: EKF Low-Q (red dashed) completely diverges during the turn
-2. **Top-right**: IMM (green) maintains <50m error throughout, while EKF Low-Q exceeds 400m
-3. **Bottom-left**: IMM **automatically detects** maneuver onset — P(CT) increases during turn
-4. **Bottom-right**: IMM achieves 2m turn RMSE vs 55m for EKF High-Q
-
-### Run It Yourself
+## Installation
 
 ```bash
-# Quick validation (10 runs, ~0.4s)
-python benchmarks/fer_benchmark.py --quick
-
-# Full benchmark (50 runs, ~2s)
-python benchmarks/fer_benchmark.py
-
-# Generate visualization
-python benchmarks/fer_benchmark_viz.py
+pip install qedmma-lite
 ```
 
-**Traceability:** `[REQ-FER-COMPARISON-01]`
-
----
-
-## 🚀 Quick Start
+## Quick Start
 
 ```python
-from qedmma import IMMTracker, MotionModels
+from qedmma import QEDMMAv31, QEDMMAConfig, TrackingMode
+import numpy as np
 
-# Create tracker with automatic model switching
-tracker = IMMTracker(
-    models=[MotionModels.CV, MotionModels.CA, MotionModels.CT],
-    dt=0.1  # 10 Hz update rate
+# Configure for 6g maneuvering target at 300 m/s
+cfg = QEDMMAConfig(
+    dt=0.1,                           # 10 Hz
+    omega=9.81 * 6.0 / 300.0,         # Turn rate for 6g
+    mode=TrackingMode.FULL_SMOOTH     # Enable smoothing
 )
 
-# Track maneuvering target
-for measurement in radar_data:
-    state = tracker.update(measurement)
-    print(f"Position: {state.position}, Mode: {state.active_model}")
+# Create tracker and process measurements
+tracker = QEDMMAv31(cfg)
+x_filt, x_smooth = tracker.process_batch(measurements)
+
+# x_filt: Forward filter estimates (real-time compatible)
+# x_smooth: Smoothed estimates (+48% accuracy improvement)
 ```
 
-That's it. **6 lines** to production-ready IMM tracking.
+## Performance
+
+Validated on maneuvering target scenarios:
+
+| Scenario | Filter RMSE | Smoother RMSE | Improvement |
+|----------|-------------|---------------|-------------|
+| 3g Turn | 1.81m | 0.88m | **+51.1%** |
+| 6g Turn | 1.91m | 0.98m | **+48.5%** |
+| 9g Turn | 1.95m | 1.02m | **+47.7%** |
+
+## Key Innovation: True IMM Smoother
+
+Standard RTS smoothing on combined IMM state fails because it mixes incompatible model dynamics. QEDMMA v3.1 implements **per-model RTS smoothing**:
+
+1. Smooth each model (CV, CT+, CT-) independently
+2. Use stored predictions from forward pass (F @ x_mixed)
+3. Combine with forward mode probabilities
+
+This achieves consistent +48% improvement across all tested scenarios.
+
+## Applications
+
+- **Missile Guidance:** Terminal seeker tracking
+- **Fire Control Radar:** Track-while-scan
+- **Air Traffic Control:** Maneuvering aircraft
+- **Maritime Surveillance:** Ship tracking
+
+## License
+
+AGPL-3.0 (open source) — Commercial licenses available for defense applications.
+
+Contact: mladen@nexellum.com | +385 99 737 5100
 
 ---
 
-## 📦 Installation
-
-```bash
-pip install qedmma
-```
-
-**Requirements:** Python 3.8+, NumPy, SciPy
-
----
-
-## 🆚 Why Not FilterPy or Stone Soup?
-
-| Aspect | QEDMMA-Lite | FilterPy | Stone Soup |
-|--------|-------------|----------|------------|
-| IMM Setup | 6 lines | 50+ lines | 100+ lines |
-| Learning Curve | Minutes | Hours | Days |
-| Real-time Ready | ✅ Yes | ⚠️ Manual tuning | ❌ Heavy framework |
-| FPGA IP Cores | ✅ PRO version | ❌ None | ❌ None |
-| Maintenance | Active (2026) | Sporadic | Active |
-
-**QEDMMA is to Stone Soup what Flask is to Django** — powerful but simple.
-
----
-
-## 📄 Licensing
-
-### QEDMMA-Lite (This Repository)
-- **License:** MIT
-- **Use cases:** R&D, prototyping, academic research, evaluation
-- **Cost:** Free forever
-
-### QEDMMA-PRO (Commercial)
-- **Features:** FPGA IP cores, Anomaly Hunter™, hypersonic tracking, priority support
-- **Performance:** <15m maneuvering RMSE, <50m hypersonic RMSE
-- **Pricing:** Contact for quote
-- **Contact:** mladen@nexellum.com
-
----
-
-## 📚 Citation
-
-If you use QEDMMA in academic work:
-
-```bibtex
-@software{qedmma2026,
-  author = {Mešter, Mladen},
-  title = {QEDMMA: Multi-Model Adaptive Tracking Algorithm},
-  year = {2026},
-  publisher = {Nexellum d.o.o.},
-  url = {https://github.com/mladen1312/qedmma-lite}
-}
-```
-
----
-
-## 📞 Contact
-
-**Dr. Mladen Mešter**  
-Nexellum d.o.o.  
-📧 mladen@nexellum.com  
-🌐 [nexellum.com](https://nexellum.com)
-
----
-
-*Built with ❤️ for the radar tracking community*
+*Nexellum d.o.o. — Advanced Defense Technology Systems*
