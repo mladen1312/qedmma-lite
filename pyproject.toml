@@ -1,118 +1,64 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "qedmma"
-version = "3.0.0"
-description = "High-performance Interacting Multiple Model (IMM) tracking library that outperforms FilterPy by 40-85%"
+name = "qedmma-lite"
+version = "3.1.0"
+description = "QEDMMA: Quantum-Enhanced Dynamically-Managed Multi-Model Algorithm for radar tracking"
 readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.8"
+license = {text = "AGPL-3.0"}
 authors = [
     {name = "Dr. Mladen Mešter", email = "mladen@nexellum.com"}
 ]
 maintainers = [
-    {name = "Dr. Mladen Mešter", email = "mladen@nexellum.com"}
+    {name = "Nexellum d.o.o.", email = "mladen@nexellum.com"}
 ]
 keywords = [
-    "kalman-filter",
-    "imm",
-    "tracking",
-    "state-estimation",
-    "sensor-fusion",
-    "ukf",
-    "ckf",
-    "radar",
-    "robotics",
-    "autonomous-vehicles",
-    "maneuvering-target",
-    "multi-model"
+    "radar", "tracking", "kalman", "imm", "maneuvering-target",
+    "rts-smoother", "defense", "aerospace"
 ]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Physics",
-    "Typing :: Typed"
 ]
+requires-python = ">=3.9"
 dependencies = [
-    "numpy>=1.20.0"
+    "numpy>=1.21.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "black>=23.0.0",
-    "isort>=5.12.0",
-    "mypy>=1.0.0",
-    "ruff>=0.1.0"
-]
-benchmark = [
-    "filterpy>=1.4.5",
-    "pykalman>=0.9.5",
-    "stonesoup>=1.0",
-    "matplotlib>=3.5.0"
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "scipy>=1.9.0",
+    "matplotlib>=3.5.0",
 ]
 docs = [
-    "mkdocs>=1.5.0",
-    "mkdocs-material>=9.0.0",
-    "mkdocstrings[python]>=0.24.0"
-]
-all = [
-    "qedmma[dev,benchmark,docs]"
+    "sphinx>=5.0",
+    "sphinx-rtd-theme>=1.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/mladen1312/qedmma-lite"
-Documentation = "https://github.com/mladen1312/qedmma-lite#readme"
-Repository = "https://github.com/mladen1312/qedmma-lite.git"
-Issues = "https://github.com/mladen1312/qedmma-lite/issues"
-Changelog = "https://github.com/mladen1312/qedmma-lite/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/nexellum/qedmma-lite"
+Documentation = "https://qedmma.nexellum.com"
+Repository = "https://github.com/nexellum/qedmma-lite"
+Issues = "https://github.com/nexellum/qedmma-lite/issues"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/qedmma"]
-
-[tool.hatch.build.targets.sdist]
-include = [
-    "/src",
-    "/tests",
-    "/README.md",
-    "/LICENSE",
-    "/CHANGELOG.md"
-]
+[tool.setuptools.packages.find]
+include = ["qedmma*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-python_files = ["test_*.py"]
-addopts = "-v --cov=qedmma --cov-report=term-missing"
-
-[tool.black]
-line-length = 100
-target-version = ["py38", "py39", "py310", "py311", "py312"]
-
-[tool.isort]
-profile = "black"
-line_length = 100
-
-[tool.mypy]
-python_version = "3.8"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-
-[tool.ruff]
-line-length = 100
-target-version = "py38"
-select = ["E", "F", "I", "N", "W", "UP"]
+python_files = "test_*.py"
+addopts = "-v --tb=short"
