@@ -13,7 +13,7 @@ cooperation with the community in the case of network server software.
 
 [Full AGPL v3 text available at: https://www.gnu.org/licenses/agpl-3.0.txt]
 
----
+================================================================================
 
 QEDMMA Lite
 Copyright (C) 2026 Nexellum d.o.o.
@@ -25,15 +25,33 @@ by the Free Software Foundation, either version 3 of the License, or
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+along with this program. If not, see <https://www.gnu.org/licenses/>.
 
----
+================================================================================
 
-For commercial licensing without AGPL obligations, contact:
+                        COMMERCIAL USE EXEMPTION
+
+Commercial Use: Contact mladen@nexellum.com for exemptions.
+
+For commercial licensing without AGPL obligations (proprietary use, 
+closed-source integration, or redistribution without source disclosure),
+contact Nexellum d.o.o. for a commercial license:
+
   Nexellum d.o.o.
+  Dr. Mladen Mešter
   Email: mladen@nexellum.com
   Phone: +385 99 737 5100
+
+Commercial License Tiers:
+  • Development:  $15,000 — Evaluation and prototyping
+  • Production:   $50,000 — Unlimited deployment
+  • Enterprise:  $150,000 — Source escrow, dedicated support
+
+See QEDMMA Pro for full commercial package with FPGA RTL:
+https://github.com/mladen1312/qedmma-pro
+
+================================================================================
