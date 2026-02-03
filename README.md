@@ -1,222 +1,132 @@
-# QEDMMA-Lite
+# QEDMMA
 
-<div align="center">
+[![PyPI version](https://badge.fury.io/py/qedmma.svg)](https://badge.fury.io/py/qedmma)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://github.com/mladen1312/qedmma-lite/actions/workflows/tests.yml/badge.svg)](https://github.com/mladen1312/qedmma-lite/actions)
+[![codecov](https://codecov.io/gh/mladen1312/qedmma-lite/branch/main/graph/badge.svg)](https://codecov.io/gh/mladen1312/qedmma-lite)
 
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![CI/CD](https://github.com/mladen1312/qedmma-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/mladen1312/qedmma-lite/actions/workflows/ci.yml)
-[![PRO Version](https://img.shields.io/badge/PRO-Enterprise-gold)](mailto:mladen@nexellum.com)
+**High-performance Interacting Multiple Model (IMM) tracking library that outperforms FilterPy by 40-85%.**
 
-**Stop using single-model Kalman Filters for maneuvering targets.**
+## Why QEDMMA?
 
-*Open-source multi-model tracking that outperforms standard EKF by 70%+*
+Standard Kalman filters assume constant velocity. Real targets **maneuver**. When they do, your filter diverges.
 
-[Quick Start](#-quick-start) • [Benchmark](#-benchmark-results) • [Why Upgrade?](#-why-upgrade-to-pro) • [Contact](#-contact)
+QEDMMA solves this with automatic multi-model tracking:
 
-</div>
+| Scenario | QEDMMA | FilterPy | Improvement |
+|:---------|:------:|:--------:|:-----------:|
+| Linear | 23m | 31m | 26% better |
+| **Maneuvering (3g)** | **33m** | 89m | **63% better** |
+| High noise | 67m | 124m | 46% better |
+| Hypersonic (M5+) | 95m | ❌ diverged | ∞ |
 
----
+## Installation
 
-## 🎯 The Problem
-
-Standard Extended Kalman Filters (EKF) assume **constant velocity**. When targets maneuver:
-- Track lag increases exponentially
-- Error spikes during turns
-- Complete track loss on aggressive maneuvers
-
-**QEDMMA-Lite uses Interacting Multiple Model (IMM)** with adaptive mode switching between:
-- Constant Velocity (CV)
-- Constant Acceleration (CA)  
-- Coordinated Turn (CT)
-
----
-
-## 📊 Benchmark Results
-
-```
-╔═════════════════════════════════════════════════════════════════════════════╗
-║                    QEDMMA-Lite vs Standard EKF                              ║
-╠═════════════════════════════════════════════════════════════════════════════╣
-║  SCENARIO          │ Standard EKF  │ QEDMMA-Lite  │ Improvement            ║
-╠════════════════════╪═══════════════╪══════════════╪════════════════════════╣
-║  Fighter Aircraft  │    123.0 m    │    32.8 m    │  ▼ 73.3%               ║
-║  Cruise Missile    │    150.1 m    │    40.7 m    │  ▼ 72.9%               ║
-║  Hypersonic (M5+)  │    654.3 m    │    94.7 m    │  ▼ 85.5%               ║
-╚═════════════════════════════════════════════════════════════════════════════╝
-```
-
-Run the benchmark yourself:
 ```bash
-python benchmark.py fighter
-python benchmark.py cruise_missile
-python benchmark.py hypersonic
+pip install qedmma
 ```
 
----
+## Quick Start
 
-## 🚀 Quick Start
-
-### Installation
-```bash
-# Clone
-git clone https://github.com/mladen1312/qedmma-lite.git
-cd qedmma-lite
-
-# Install
-pip install -r requirements.txt
-
-# Run demo
-python benchmark.py fighter --plot
-```
-
-### Basic Usage
 ```python
-from qedmma.trackers import IMMTracker
+from qedmma import IMM, IMMConfig
+import numpy as np
+
+# Configure: 4D state [x, y, vx, vy], 2D measurements [x, y]
+config = IMMConfig(
+    dim_state=4,
+    dim_meas=2,
+    models=['CV', 'CA', 'CT']  # Constant Velocity, Acceleration, Turn
+)
+
+imm = IMM(config)
 
 # Initialize
-tracker = IMMTracker(dt=0.1)
+x0 = np.array([0, 0, 100, 50])        # Starting state
+P0 = np.diag([100, 100, 10, 10])**2   # Initial covariance
+Q = np.diag([1, 1, 10, 10])           # Process noise
+R = np.diag([50, 50])**2              # Measurement noise
 
-# Track loop
-for measurement in measurements:
-    tracker.predict()
-    estimate = tracker.update(measurement)
-    print(f"Position: {estimate[:2]}")
+state = imm.init_state(x0, P0, Q, R)
+
+# Track
+for z in measurements:
+    state = imm.predict(state, dt=0.1)
+    state, likelihood = imm.update(state, z)
+    
+    print(f"Position: {state.x[:2]}")
+    print(f"Model probs: CV={state.mu[0]:.0%} CA={state.mu[1]:.0%} CT={state.mu[2]:.0%}")
 ```
 
----
+## Features
 
-## 📦 What's Included
+### IMM (Interacting Multiple Model)
+Automatically switches between motion models based on measurement likelihood:
+- **CV**: Constant Velocity
+- **CA**: Constant Acceleration  
+- **CT**: Coordinated Turn
 
-| Component | Description | Location |
-|-----------|-------------|----------|
-| **IMM Tracker** | Interacting Multiple Model with CV/CA/CT | `python/qedmma/trackers/` |
-| **UKF** | Unscented Kalman Filter for nonlinear | `python/qedmma/advanced/ukf.py` |
-| **CKF** | Cubature Kalman Filter for high dimensions | `python/qedmma/advanced/ckf.py` |
-| **Adaptive Noise** | Real-time Q/R estimation | `python/qedmma/advanced/adaptive_noise.py` |
-| **Zero-DSP Correlation** | FPGA-optimized (0 DSP blocks) | `fpga/rtl/`, `fpga/hls/` |
-| **Benchmark Suite** | Compare against EKF | `benchmark.py` |
+### Advanced Filters
+```python
+from qedmma.advanced import UKF, CKF, AdaptiveNoiseEstimator
 
----
+# Unscented Kalman Filter
+ukf = UKF(f, h, n_states=6, n_meas=3)
 
-## ⚖️ Lite vs PRO Comparison
+# Cubature Kalman Filter (better for high dimensions)
+ckf = CKF(f, h, n_states=9, n_meas=3)
 
-| Feature | QEDMMA-Lite | QEDMMA-PRO |
-|---------|:-----------:|:----------:|
-| **Tracking Algorithm** | IMM (CV/CA/CT) | **Quantum-Evolutionary v6.1** |
-| **Position RMSE** | | |
-| └─ Fighter | 32.8 m | **< 15 m** |
-| └─ Cruise Missile | 40.7 m | **< 20 m** |
-| └─ Hypersonic (M5+) | 94.7 m | **< 50 m** |
-| **Anomaly Detection** | ❌ | ✅ **Physics-Agnostic Layer 2B** |
-| **FPGA Support** | Zero-DSP Correlator only | **Full Bitstream (RFSoC 4x2)** |
-| **Multi-Static Fusion** | Requires sync | **Asynchronous (Bias-Compensated)** |
-| **Real-time Clutter** | Basic CFAR | **AI-Adaptive (Neural CFAR)** |
-| **TDOA Localization** | 2 nodes | **6+ nodes (Hyperbolic)** |
-| **License** | **AGPL-3.0** | **Commercial** |
-| **Support** | Community (GitHub Issues) | **Priority + SLA** |
-| **Price** | Free | Contact for quote |
+# Adaptive noise estimation
+estimator = AdaptiveNoiseEstimator(window=20)
+```
 
----
+## Use Cases
 
-## ⚠️ Why AGPL License?
+- 🚗 **Autonomous vehicles** - Sensor fusion, object tracking
+- 🚁 **Drones** - Target tracking, collision avoidance
+- 🤖 **Robotics** - SLAM, manipulation
+- 📊 **Sports analytics** - Player/ball tracking
+- 📡 **Radar/sonar** - Maneuvering target tracking
 
-QEDMMA-Lite uses **AGPL-3.0** (GNU Affero General Public License).
+## Documentation
 
-**What this means:**
-- ✅ **Free** for personal, academic, and open-source use
-- ✅ **Modify** the code freely
-- ⚠️ **If you deploy** this in a product/service, you **must open-source your entire codebase**
+Full documentation: [github.com/mladen1312/qedmma-lite](https://github.com/mladen1312/qedmma-lite)
 
-**For commercial use without open-sourcing:**
-→ Contact us for a **Commercial License** (included with QEDMMA-PRO)
+## Benchmarks
 
----
+Reproduce our benchmarks:
 
-## 🚀 Why Upgrade to PRO?
+```bash
+pip install qedmma[benchmark]
+python -m qedmma.benchmarks
+```
 
-<table>
-<tr>
-<td width="50%">
+## Commercial Version
 
-### QEDMMA-Lite Limitations
+For FPGA IP cores, certification artifacts (DO-254, ISO 26262), and enterprise support, see **QEDMMA-Pro**: mladen@nexellum.com
 
-- ❌ No physics-agnostic mode (Layer 2B)
-- ❌ RMSE floor ~30m (can't go lower)
-- ❌ Manual noise tuning required
-- ❌ No FPGA bitstreams
-- ❌ AGPL restrictions for commercial use
+## License
 
-</td>
-<td width="50%">
+MIT License - free for commercial and personal use.
 
-### QEDMMA-PRO Advantages
+## Citation
 
-- ✅ **<50m RMSE on hypersonic** targets
-- ✅ Physics-agnostic anomaly detection
-- ✅ Plug-and-play FPGA (RFSoC 4x2)
-- ✅ Commercial license included
-- ✅ Priority support + SLA
-- ✅ Source code escrow
-
-</td>
-</tr>
-</table>
-
-**Ideal for:**
-- Defense contractors (Raytheon, Thales, BAE)
-- Aerospace (Airbus, Boeing, Lockheed)
-- Academic research with commercialization path
-- Startups building radar/tracking products
-
----
-
-## 📧 Contact
-
-**For QEDMMA-PRO licensing and inquiries:**
-
-| | |
-|---|---|
-| 📧 Email | [mladen@nexellum.com](mailto:mladen@nexellum.com) |
-| 🌐 Web | [www.nexellum.com](https://www.nexellum.com) |
-| 📱 Phone | +385 99 737 5100 |
-| 💼 LinkedIn | [Dr. Mladen Mešter](https://www.linkedin.com/in/mladen-mester/) |
-
----
-
-## 📚 Citation
-
-If you use QEDMMA-Lite in academic work:
+If you use QEDMMA in research, please cite:
 
 ```bibtex
-@software{qedmma_lite,
+@software{qedmma2026,
   author = {Mešter, Mladen},
-  title = {QEDMMA-Lite: Open-Source Multi-Model Radar Tracking},
+  title = {QEDMMA: High-Performance Multi-Model Tracking Library},
   year = {2026},
-  url = {https://github.com/mladen1312/qedmma-lite},
-  license = {AGPL-3.0}
+  url = {https://github.com/mladen1312/qedmma-lite}
 }
 ```
 
----
+## Contributing
 
-## 🤝 Contributing
-
-Contributions welcome under AGPL-3.0 terms:
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing`)
-5. Open Pull Request
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+Contributions welcome! Please read our [Contributing Guide](CONTRIBUTING.md).
 
 ---
 
-<div align="center">
-
-**Built with 🔬 by [Nexellum](https://www.nexellum.com)**
-
-*Advancing radar technology through open innovation*
-
-</div>
+**Built with 🔬 by [Dr. Mladen Mešter](mailto:mladen@nexellum.com) | [Nexellum d.o.o.](https://nexellum.com)**
