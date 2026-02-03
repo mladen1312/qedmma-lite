@@ -1,8 +1,22 @@
-GNU AFFERO GENERAL PUBLIC LICENSE
-Version 3, 19 November 2007
+                    GNU AFFERO GENERAL PUBLIC LICENSE
+                       Version 3, 19 November 2007
 
-Copyright (C) 2024-2026 Nexellum d.o.o.
-Dr. Mladen Mešter <mladen@nexellum.com>
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+                            Preamble
+
+  The GNU Affero General Public License is a free, copyleft license for
+software and other kinds of works, specifically designed to ensure
+cooperation with the community in the case of network server software.
+
+[Full AGPL v3 text available at: https://www.gnu.org/licenses/agpl-3.0.txt]
+
+---
+
+QEDMMA Lite
+Copyright (C) 2026 Nexellum d.o.o.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -19,10 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ---
 
-COMMERCIAL LICENSE
-
-For commercial/proprietary use without AGPL requirements, contact:
-Nexellum d.o.o.
-Dr. Mladen Mešter
-Email: mladen@nexellum.com
-Phone: +385 99 737 5100
+For commercial licensing without AGPL obligations, contact:
+  Nexellum d.o.o.
+  Email: mladen@nexellum.com
+  Phone: +385 99 737 5100
