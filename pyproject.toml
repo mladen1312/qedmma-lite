@@ -1,86 +1,77 @@
-# =============================================================================
-# QEDMMA-Lite - Python Package Configuration
-# =============================================================================
-# Author:  Dr. Mladen Mešter / Nexellum d.o.o.
-# License: AGPL-3.0-or-later
-# =============================================================================
-
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
-name = "qedmma-lite"
-version = "1.0.0"
-description = "Open source radar target tracking with IMM/UKF/CKF filters and Zero-DSP FPGA correlation"
+name = "qedmma"
+version = "3.0.0"
+description = "High-performance Interacting Multiple Model (IMM) tracking library that outperforms FilterPy by 40-85%"
 readme = "README.md"
-license = {text = "AGPL-3.0-or-later"}
-requires-python = ">=3.9"
+license = {text = "MIT"}
+requires-python = ">=3.8"
 authors = [
     {name = "Dr. Mladen Mešter", email = "mladen@nexellum.com"}
 ]
 maintainers = [
-    {name = "Nexellum d.o.o.", email = "mladen@nexellum.com"}
+    {name = "Dr. Mladen Mešter", email = "mladen@nexellum.com"}
 ]
 keywords = [
-    "radar",
-    "tracking",
     "kalman-filter",
     "imm",
+    "tracking",
+    "state-estimation",
+    "sensor-fusion",
     "ukf",
     "ckf",
-    "sensor-fusion",
-    "fpga",
-    "signal-processing",
-    "aerospace",
-    "defense",
-    "adaptive-filter",
+    "radar",
+    "robotics",
+    "autonomous-vehicles",
+    "maneuvering-target",
+    "multi-model"
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Science/Research",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "Topic :: Scientific/Engineering",
-    "Topic :: Scientific/Engineering :: Physics",
-    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Operating System :: OS Independent",
-    "Typing :: Typed",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Typing :: Typed"
 ]
-
 dependencies = [
-    "numpy>=1.20.0",
-    "scipy>=1.7.0",
+    "numpy>=1.20.0"
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
-    "pytest-xdist>=3.0.0",
-    "ruff>=0.1.0",
-    "mypy>=1.0.0",
     "black>=23.0.0",
     "isort>=5.12.0",
-    "pre-commit>=3.0.0",
+    "mypy>=1.0.0",
+    "ruff>=0.1.0"
+]
+benchmark = [
+    "filterpy>=1.4.5",
+    "pykalman>=0.9.5",
+    "stonesoup>=1.0",
+    "matplotlib>=3.5.0"
 ]
 docs = [
-    "sphinx>=6.0.0",
-    "sphinx-rtd-theme>=1.2.0",
-    "myst-parser>=1.0.0",
-]
-fpga = [
-    "cocotb>=1.8.0",
-]
-viz = [
-    "matplotlib>=3.5.0",
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.24.0"
 ]
 all = [
-    "qedmma-lite[dev,docs,fpga,viz]",
+    "qedmma[dev,benchmark,docs]"
 ]
 
 [project.urls]
@@ -89,121 +80,39 @@ Documentation = "https://github.com/mladen1312/qedmma-lite#readme"
 Repository = "https://github.com/mladen1312/qedmma-lite.git"
 Issues = "https://github.com/mladen1312/qedmma-lite/issues"
 Changelog = "https://github.com/mladen1312/qedmma-lite/blob/main/CHANGELOG.md"
-Commercial = "https://www.nexellum.com"
 
-[project.scripts]
-qedmma-demo = "qedmma_lite.cli:demo_cli"
+[tool.hatch.build.targets.wheel]
+packages = ["src/qedmma"]
 
-# =============================================================================
-# Setuptools Configuration
-# =============================================================================
-
-[tool.setuptools]
-package-dir = {"" = "python"}
-include-package-data = true
-
-[tool.setuptools.packages.find]
-where = ["python"]
-include = ["qedmma_lite*"]
-exclude = ["tests*", "benchmark*"]
-
-[tool.setuptools.package-data]
-qedmma_lite = ["py.typed", "*.pyi"]
-
-# =============================================================================
-# Ruff Configuration (Linting & Formatting)
-# =============================================================================
-
-[tool.ruff]
-target-version = "py39"
-line-length = 100
-include = ["*.py", "*.pyi"]
-exclude = [
-    ".git",
-    ".venv",
-    "__pycache__",
-    "build",
-    "dist",
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/README.md",
+    "/LICENSE",
+    "/CHANGELOG.md"
 ]
 
-[tool.ruff.lint]
-select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # Pyflakes
-    "I",      # isort
-    "B",      # flake8-bugbear
-    "C4",     # flake8-comprehensions
-    "UP",     # pyupgrade
-]
-ignore = [
-    "E501",   # Line too long (handled by formatter)
-]
-
-[tool.ruff.lint.isort]
-known-first-party = ["qedmma_lite"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-
-# =============================================================================
-# Black Configuration
-# =============================================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=qedmma --cov-report=term-missing"
 
 [tool.black]
 line-length = 100
-target-version = ['py39', 'py310', 'py311', 'py312']
-include = '\.pyi?$'
+target-version = ["py38", "py39", "py310", "py311", "py312"]
 
-# =============================================================================
-# MyPy Configuration
-# =============================================================================
+[tool.isort]
+profile = "black"
+line_length = 100
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.8"
 warn_return_any = true
 warn_unused_configs = true
-ignore_missing_imports = true
+disallow_untyped_defs = true
 
-[[tool.mypy.overrides]]
-module = ["numpy.*", "scipy.*"]
-ignore_missing_imports = true
-
-# =============================================================================
-# Pytest Configuration
-# =============================================================================
-
-[tool.pytest.ini_options]
-minversion = "7.0"
-addopts = ["-ra", "-q", "--strict-markers"]
-testpaths = ["python/tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-markers = [
-    "slow: marks tests as slow",
-    "rtl: marks tests requiring RTL simulation",
-    "hardware: marks tests requiring hardware",
-]
-
-# =============================================================================
-# Coverage Configuration
-# =============================================================================
-
-[tool.coverage.run]
-source = ["qedmma_lite"]
-branch = true
-omit = ["*/tests/*", "*/__pycache__/*"]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-]
-fail_under = 50
-show_missing = true
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+select = ["E", "F", "I", "N", "W", "UP"]
