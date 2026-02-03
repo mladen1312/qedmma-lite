@@ -5,28 +5,35 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://github.com/mladen1312/qedmma-lite/actions/workflows/tests.yml/badge.svg)](https://github.com/mladen1312/qedmma-lite/actions)
 
-**High-performance multi-model tracking library that outperforms FilterPy by 40-85%.**
+**High-performance 4-model IMM tracking library optimized for maneuvering targets.**
 
-> *"QEDMMA is to Stone Soup what Flask is to Django — 80% of use cases, 5 minutes setup."*
+> *"QEDMMA is to Stone Soup what Flask is to Django — production-ready tracking in minutes."*
 
 ---
 
 ## 🎯 Why QEDMMA?
 
-Standard Kalman filters assume constant velocity. Real targets **maneuver**. When they do, your filter diverges.
+Standard Kalman filters assume **constant velocity**. Real targets **maneuver**. When they do, your filter's error grows rapidly.
 
-QEDMMA solves this with Interacting Multiple Model (IMM) tracking that automatically switches between motion models.
+QEDMMA solves this with a 4-model Interacting Multiple Model (IMM) filter that automatically switches between:
+- **CV**: Constant Velocity — straight-line motion
+- **CA**: Constant Acceleration — speeding up/slowing down
+- **CT**: Coordinated Turn — banking maneuvers
+- **Jerk**: Constant Jerk — rapid acceleration changes
 
-### Benchmarks
+### ✅ Verified Benchmarks
 
-| Scenario | QEDMMA | FilterPy EKF | Stone Soup | Improvement |
-|:---------|:------:|:------------:|:----------:|:-----------:|
-| Linear (CV) | **23m** | 31m | 38m | 26% better |
-| Maneuvering (3g) | **33m** | 89m | 112m | **63% better** |
-| High Noise (σ=200m) | **67m** | 124m | 145m | 46% better |
-| Hypersonic (M5+) | **95m** | ❌ diverged | ❌ diverged | ∞ |
+*Monte Carlo simulation, n=10 runs, position RMSE in meters*
 
-*Position RMSE in meters. Lower is better.*
+| Scenario | FilterPy EKF | FilterPy IMM | QEDMMA IMM | Improvement |
+|:---------|:------------:|:------------:|:----------:|:-----------:|
+| Linear (CV) | **18m** | **17m** | 25m | — |
+| Maneuvering (3g) | 128m | 120m | **71m** | **+44%** ✅ |
+| Aggressive (5g+) | 172m | 161m | **139m** | **+19%** ✅ |
+
+**Key insight**: QEDMMA excels on **maneuvering targets**. For purely linear motion, single-model filters have lower computational overhead.
+
+> 💡 **When to use QEDMMA**: Target tracking where maneuvers are expected (aircraft, missiles, evasive vehicles, drones).
 
 ---
 
@@ -37,36 +44,34 @@ pip install qedmma
 ```
 
 ```python
-from qedmma import IMM, IMMConfig
+from qedmma import QEDMMATracker, Measurement
 import numpy as np
 
-# Configure: 4D state [x, y, vx, vy], 2D measurements [x, y]
-config = IMMConfig(
-    dim_state=4,
-    dim_meas=2,
-    models=['CV', 'CA', 'CT']  # Constant Velocity, Acceleration, Turn
+# Create tracker (16 Hz update rate)
+tracker = QEDMMATracker(dt=0.0625)
+
+# Initialize with first measurement
+tracker.initialize(
+    initial_pos=np.array([1000, 2000, 5000]),  # x, y, z in meters
+    initial_vel=np.array([200, 0, 0])          # vx, vy, vz in m/s
 )
 
-imm = IMM(config)
-
-# Initialize
-x0 = np.array([0, 0, 100, 50])        # Starting state
-P0 = np.diag([100, 100, 10, 10])**2   # Initial covariance
-Q = np.diag([1, 1, 10, 10])           # Process noise
-R = np.diag([50, 50])**2              # Measurement noise
-
-state = imm.init_state(x0, P0, Q, R)
-
-# Track
-for z in measurements:
-    state = imm.predict(state, dt=0.1)
-    state, likelihood = imm.update(state, z)
+# Track incoming measurements
+for pos, t in sensor_data:
+    measurement = Measurement(
+        pos=pos,
+        noise_pos=50.0,  # Position uncertainty (m)
+        noise_vel=10.0,  # Velocity uncertainty (m/s)
+        time=t
+    )
     
-    print(f"Position: {state.x[:2]}")
-    print(f"Models: CV={state.mu[0]:.0%} CA={state.mu[1]:.0%} CT={state.mu[2]:.0%}")
+    state = tracker.update(measurement)
+    
+    print(f"Position: {state.pos}")
+    print(f"Velocity: {state.vel} ({state.mach():.1f} Mach)")
+    print(f"G-load: {state.g_load():.1f}g")
+    print(f"Models: {tracker.imm.get_model_probabilities()}")
 ```
-
-That's it. No 50-line boilerplate. No PhD required.
 
 ---
 
@@ -74,56 +79,49 @@ That's it. No 50-line boilerplate. No PhD required.
 
 | Feature | Lite (Free) | PRO (Commercial) |
 |:--------|:-----------:|:----------------:|
-| IMM Filter (CV/CA/CT) | ✅ | ✅ |
-| UKF, CKF | ✅ | ✅ |
-| Adaptive Noise Estimation | ✅ | ✅ |
-| Zero-DSP Correlation | Basic | **Advanced** |
+| 4-model IMM (CV/CA/CT/Jerk) | ✅ | ✅ |
+| Automatic model adaptation | ✅ | ✅ |
+| Python API | ✅ | ✅ |
 | FPGA IP Cores | ❌ | ✅ 22 cores |
 | Multi-target (1024+) | ❌ | ✅ |
 | ML-CFAR, Micro-Doppler | ❌ | ✅ |
 | Anomaly Hunter™ Layer 2B | ❌ | ✅ **EXCLUSIVE** |
-| Link-16, ASTERIX | ❌ | ✅ |
-| DO-254 / ISO 26262 Support | ❌ | ✅ |
-| **Maneuvering Target RMSE** | ~33m | **<15m** |
-| **Hypersonic Target RMSE** | ~95m | **<50m** |
+| Link-16, ASTERIX output | ❌ | ✅ |
+| DO-254 / ISO 26262 docs | ❌ | ✅ |
 | **License** | MIT | Commercial |
 | **Price** | Free | $25K-$350K |
 
 ---
 
-## 🔧 Features
+## 🔧 How IMM Works
 
-### IMM (Interacting Multiple Model)
-Automatically switches between motion models based on measurement likelihood:
-- **CV**: Constant Velocity — straight-line motion
-- **CA**: Constant Acceleration — speeding up/slowing down  
-- **CT**: Coordinated Turn — maneuvering
-
-### Advanced Filters
-```python
-from qedmma.advanced import UKF, CKF, AdaptiveNoiseEstimator
-
-# Unscented Kalman Filter for nonlinear systems
-ukf = UKF(f, h, n_states=6, n_meas=3)
-
-# Cubature Kalman Filter (better for high dimensions)
-ckf = CKF(f, h, n_states=9, n_meas=3)
-
-# Adaptive noise estimation (don't know your R matrix?)
-estimator = AdaptiveNoiseEstimator(window=20)
-R_estimated = estimator.estimate(innovations)
+```
+                     ┌─────────────┐
+    Measurement ────►│   CV Model  │────┐
+         │           └─────────────┘    │
+         │           ┌─────────────┐    │     ┌──────────────┐
+         ├──────────►│   CA Model  │────┼────►│   Weighted   │────► State
+         │           └─────────────┘    │     │   Estimate   │      Estimate
+         │           ┌─────────────┐    │     └──────────────┘
+         ├──────────►│   CT Model  │────┤
+         │           └─────────────┘    │
+         │           ┌─────────────┐    │
+         └──────────►│  Jerk Model │────┘
+                     └─────────────┘
+                     
+Each model computes likelihood. Models with better predictions get higher weights.
 ```
 
 ---
 
 ## 📚 Use Cases
 
-- 🚗 **Autonomous Vehicles** — Sensor fusion, pedestrian/vehicle tracking
-- 🚁 **Drones** — Target tracking, collision avoidance
-- 🤖 **Robotics** — SLAM, object manipulation
-- 📊 **Sports Analytics** — Player/ball tracking
-- 📡 **Radar/Sonar** — Maneuvering target tracking
-- 🛰️ **Aerospace** — Satellite tracking, missile defense
+- 🛩️ **Air Traffic Control** — Commercial and military aircraft
+- 🚀 **Missile Defense** — Ballistic and cruise missiles
+- 🚁 **Drone Tracking** — Counter-UAS systems
+- 🚗 **Autonomous Vehicles** — Sensor fusion, pedestrian tracking
+- 🤖 **Robotics** — Dynamic obstacle avoidance
+- 📊 **Sports Analytics** — Player and ball tracking
 
 ---
 
@@ -131,35 +129,13 @@ R_estimated = estimator.estimate(innovations)
 
 ### MIT License (Free)
 
-QEDMMA-Lite is released under the **MIT License** — use it freely in any project, commercial or open-source.
+QEDMMA-Lite is released under the **MIT License** — use it freely in commercial or open-source projects.
 
 ### Commercial License (QEDMMA-PRO)
 
-For organizations requiring:
-- 🔓 FPGA IP Cores (SystemVerilog/VHDL)
-- 🚀 Physics-Agnostic Anomaly Hunter™
-- 🛡️ DO-254 / ISO 26262 certification support
-- 🆘 Priority engineering support
+For FPGA deployment, defense applications, or certification support:
 
 **Contact:** [mladen@nexellum.com](mailto:mladen@nexellum.com)
-
-| Use Case | MIT (Lite) | Commercial (PRO) |
-|:---------|:----------:|:----------------:|
-| Academic research | ✅ Free | Optional |
-| Internal R&D | ✅ Free | Optional |
-| Open-source project | ✅ Free | Optional |
-| Closed-source product | ✅ Free | Recommended |
-| FPGA deployment | ❌ N/A | ✅ Required |
-| Defense/aerospace | ✅ Free | ✅ Recommended |
-
----
-
-## 📖 Documentation
-
-- [API Reference](docs/api.md)
-- [Tutorials](docs/tutorials/)
-- [Examples](examples/)
-- [Benchmarks](benchmarks/)
 
 ---
 
@@ -167,12 +143,11 @@ For organizations requiring:
 
 | | QEDMMA | FilterPy | Stone Soup |
 |:--|:------:|:--------:|:----------:|
-| **IMM setup** | 6 lines | 50+ lines | 100+ lines |
-| **Learning curve** | Minutes | Hours | Days |
-| **Maneuvering performance** | ✅ Excellent | ⚠️ Poor | ✅ Good |
+| **4-model IMM** | ✅ Built-in | ❌ Manual | ✅ Available |
+| **Setup time** | 5 minutes | 1+ hours | 1+ days |
+| **Maneuvering performance** | ✅ +44% | Baseline | ✅ Good |
 | **FPGA ready** | ✅ PRO | ❌ No | ❌ No |
-| **Real-time capable** | ✅ Yes | ⚠️ Limited | ⚠️ Heavy |
-| **Active development** | ✅ 2026 | ⚠️ 2023 | ✅ 2025 |
+| **Code complexity** | ~900 lines | ~2000 lines | ~100K lines |
 
 ---
 
@@ -190,7 +165,7 @@ Nexellum d.o.o.
 ```bibtex
 @software{qedmma2026,
   author = {Mešter, Mladen},
-  title = {QEDMMA: High-Performance Multi-Model Tracking Library},
+  title = {QEDMMA: Multi-Model IMM Tracking Library},
   year = {2026},
   url = {https://github.com/mladen1312/qedmma-lite}
 }
@@ -198,9 +173,11 @@ Nexellum d.o.o.
 
 ---
 
-## ⭐ Star History
+## ⚠️ Limitations
 
-If QEDMMA helps your project, please star the repo — it helps others find it!
+- **Linear motion**: Single-model EKF may have lower overhead for purely constant-velocity targets
+- **High noise**: Very high measurement noise (>150m σ) may require tuning
+- **Real-time**: Python implementation is ~10x slower than FPGA; for real-time use consider QEDMMA-PRO
 
 ---
 
